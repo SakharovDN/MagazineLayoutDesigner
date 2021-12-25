@@ -29,17 +29,17 @@
 
         private void loadTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (openFileDialog.ShowDialog() != DialogResult.OK)
+            if (openTextFileDialog.ShowDialog() != DialogResult.OK)
             {
                 return;
             }
 
-            switch (Path.GetExtension(openFileDialog.FileName))
+            switch (Path.GetExtension(openTextFileDialog.FileName))
             {
                 case ".txt":
                 case ".doc":
                 case ".docx":
-                    _pagePanel.LoadText(openFileDialog.FileName);
+                    _pagePanel.LoadText(openTextFileDialog.FileName);
                     break;
 
                 default:
@@ -50,8 +50,33 @@
 
         private void addPictureToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (openImageFileDialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
 
+            
+            switch (Path.GetExtension(openImageFileDialog.FileName))
+            {
+                case ".png":
+                case ".jpg":
+                case ".jpeg":
+                    var imageManagerWindow = new ImageManagerWindow(openImageFileDialog.FileName);
+
+                    if (imageManagerWindow.ShowDialog() != DialogResult.OK)
+                    {
+                        return;
+                    }
+                    _pagePanel.LoadImage(imageManagerWindow.SelectedImage);
+                    break;
+
+                default:
+                    MessageBox.Show("Выберите изображение формата .png, .jpg, .jpeg.", "Ошибка");
+                    break;
+            }
         }
+
+
 
         #endregion
     }
