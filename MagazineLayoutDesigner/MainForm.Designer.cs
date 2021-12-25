@@ -88,6 +88,7 @@ namespace MagazineLayoutDesigner
             // 
             // removeImageToolStripMenuItem
             // 
+            this.removeImageToolStripMenuItem.CheckOnClick = true;
             this.removeImageToolStripMenuItem.Name = "removeImageToolStripMenuItem";
             this.removeImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.removeImageToolStripMenuItem.Text = "Удалить";

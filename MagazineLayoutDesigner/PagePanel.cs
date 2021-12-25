@@ -110,6 +110,11 @@
             RenderPage();
         }
 
+        /// <summary>
+        /// Метод удаления изображения
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         public void RemoveImage(object sender, MouseEventArgs e)
         {
             if (!(sender is ImagePictureBox image))
@@ -122,6 +127,11 @@
             RenderPage();
         }
 
+        /// <summary>
+        /// Обработчик, включающий режим удаления изображений
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         public void TurnOnRemoveMode(object sender, EventArgs e)
         {
             Cursor = Cursors.Cross;
@@ -135,6 +145,11 @@
             }
         }
 
+        /// <summary>
+        /// Обработчик, отключающий режим удаления изоюражений
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         public void TurnOffRemoveMode(object sender, EventArgs e)
         {
             Cursor = Cursors.Default;
@@ -215,6 +230,7 @@
             var words = new ConcurrentQueue<string>(_textContent);
             // список Label'ов
             labels = new List<Label>();
+            var line = new List<Label>();
             // задаем начальные координаты 
             int x = Margin.All, y = Margin.All;
             // задаем ширину свободного места в строке
@@ -242,6 +258,8 @@
                         y += Convert.ToInt32(Math.Round(PageParameters.LINE_SPACING * _lineFactor, 0));
                         _lineFreeSpaceWidth = Width - 2 * Margin.All;
                         x = Margin.All;
+                        AlignToWidth(line, Width - Margin.All);
+                        line = new List<Label>();
                         goto Begin;
                     }
 
@@ -261,6 +279,8 @@
                         {
                             x = image.Location.X + image.Width;
                             _lineFreeSpaceWidth = Width - image.Location.X - image.Width - Margin.All;
+                            AlignToWidth(line, image.Location.X);
+                            line = new List<Label>();
                             goto Begin;
                         }
                     }
@@ -281,12 +301,51 @@
                 // устанавливаем подобранные координаты для label'a, добавляем его в список, увеличивем координату x и уменьшаем ширину свободного пространства для следующего слова
                 label.Location = new Point(x, y);
                 labels.Add(label);
+                line.Add(label);
                 x += label.PreferredWidth;
                 _lineFreeSpaceWidth -= label.PreferredWidth;
             }
 
             // цикл остановился, выходим из метода с true (заполнить страницу получилось)
             return true;
+        }
+
+        /// <summary>
+        /// Метод, который выравнивает строку текста по ширине
+        /// </summary>
+        /// <param name = "labelLine"></param>
+        /// <param name = "lineEnd"></param>
+        private static void AlignToWidth(IReadOnlyList<Label> labelLine, int lineEnd)
+        {
+            if (labelLine.Count < 2)
+            {
+                return;
+            }
+
+            int freeSpace = lineEnd - labelLine[0].Location.X;
+            int wordSpacing = labelLine.Aggregate(freeSpace, (current, label) => current - label.PreferredWidth) / labelLine.Count;
+            int remainderAmount = labelLine.Aggregate(freeSpace, (current, label) => current - label.PreferredWidth) % labelLine.Count;
+            int x = labelLine[0].Location.X + labelLine[0].PreferredWidth;
+            int[] spaces = new int[labelLine.Count - 1];
+
+            for (int i = 0; i < spaces.Length; i++)
+            {
+                if (remainderAmount < 1)
+                {
+                    spaces[i] = wordSpacing;
+                }
+                else
+                {
+                    spaces[i] = wordSpacing + 1;
+                    remainderAmount--;
+                }
+            }
+
+            for (int i = 0; i < spaces.Length; i++)
+            {
+                labelLine[i + 1].Location = new Point(x + spaces[i], labelLine[i + 1].Location.Y);
+                x += labelLine[i + 1].PreferredWidth + spaces[i];
+            }
         }
 
         #endregion

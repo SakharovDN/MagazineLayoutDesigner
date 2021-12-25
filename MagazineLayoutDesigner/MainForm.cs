@@ -20,8 +20,14 @@
 
         #region Events
 
+        /// <summary>
+        /// Событие, которое вызывается при включении режима удаления изображений
+        /// </summary>
         private event EventHandler RemoveModeTurnedOn;
 
+        /// <summary>
+        /// Событие, которое вызывается при отключении режима удаления изображений
+        /// </summary>
         private event EventHandler RemoveModeTurnedOff;
 
         #endregion
@@ -74,7 +80,7 @@
         }
 
         /// <summary>
-        /// Обработчик нажатия кнопки Добавить изображение
+        /// Обработчик нажатия кнопки Добавить изображение (если режим удаления изображения включен, то отключаем)
         /// </summary>
         /// <param name = "sender"></param>
         /// <param name = "e"></param>
@@ -84,6 +90,7 @@
             {
                 RemoveModeTurnedOff?.Invoke(null, EventArgs.Empty);
                 _removeModeIsOn = !_removeModeIsOn;
+                removeImageToolStripMenuItem.Checked = false;
             }
 
             if (openImageFileDialog.ShowDialog() != DialogResult.OK)
@@ -129,6 +136,11 @@
             bitmap.Save(saveFileDialog.FileName);
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки Удалить изображение
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         private void removeImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_removeModeIsOn)
