@@ -35,6 +35,8 @@ namespace MagazineLayoutDesigner
             this.addPictureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openTextFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.openImageFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.saveButton = new System.Windows.Forms.Button();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -45,7 +47,7 @@ namespace MagazineLayoutDesigner
             this.fileToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(878, 24);
+            this.menuStrip.Size = new System.Drawing.Size(298, 24);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip";
             // 
@@ -80,11 +82,28 @@ namespace MagazineLayoutDesigner
             // 
             this.openImageFileDialog.Filter = "image files (*.jpeg, *.jpg, *.png)|*.jpeg; *.jpg; *.png|All files (*.*)|*.*";
             // 
+            // saveFileDialog
+            // 
+            this.saveFileDialog.DefaultExt = "png";
+            this.saveFileDialog.FileName = "page.png";
+            this.saveFileDialog.Filter = "image files (*.jpeg, *.jpg, *.png)|*.jpeg; *.jpg; *.png|All files (*.*)|*.*";
+            // 
+            // saveButton
+            // 
+            this.saveButton.Location = new System.Drawing.Point(12, 27);
+            this.saveButton.Name = "saveButton";
+            this.saveButton.Size = new System.Drawing.Size(75, 23);
+            this.saveButton.TabIndex = 1;
+            this.saveButton.Text = "Сохранить";
+            this.saveButton.UseVisualStyleBackColor = true;
+            this.saveButton.Click += new System.EventHandler(this.saveButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(878, 1244);
+            this.ClientSize = new System.Drawing.Size(298, 275);
+            this.Controls.Add(this.saveButton);
             this.Controls.Add(this.menuStrip);
             this.MainMenuStrip = this.menuStrip;
             this.Name = "MainForm";
@@ -105,6 +124,8 @@ namespace MagazineLayoutDesigner
         private System.Windows.Forms.ToolStripMenuItem loadTextToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openTextFileDialog;
         private System.Windows.Forms.OpenFileDialog openImageFileDialog;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog;
+        private System.Windows.Forms.Button saveButton;
     }
 }
 

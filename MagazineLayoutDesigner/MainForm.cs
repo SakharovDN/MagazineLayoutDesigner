@@ -2,6 +2,7 @@
 {
     using System;
     using System.Drawing;
+    using System.Drawing.Imaging;
     using System.IO;
     using System.Windows.Forms;
 
@@ -20,6 +21,9 @@
             InitializeComponent();
             _pagePanel = new PagePanel(new Point(10, menuStrip.Height + 10));
             Controls.Add(_pagePanel);
+            saveButton.Location = new Point(10, _pagePanel.Location.Y + _pagePanel.Height + 10);
+            Width = _pagePanel.Width + 40;
+            Height = menuStrip.Height + _pagePanel.Height + saveButton.Height + 60;
         }
 
         #endregion
@@ -76,6 +80,18 @@
                     MessageBox.Show("Выберите изображение формата .png, .jpg, .jpeg.", "Ошибка");
                     break;
             }
+        }
+
+        private void saveButton_Click(object sender, EventArgs e)
+        {
+            if (saveFileDialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            var bitmap = new Bitmap(_pagePanel.Width, _pagePanel.Height);
+            _pagePanel.DrawToBitmap(bitmap, new Rectangle(0, 0, _pagePanel.Width, _pagePanel.Height));
+            bitmap.Save(saveFileDialog.FileName);
         }
 
         #endregion

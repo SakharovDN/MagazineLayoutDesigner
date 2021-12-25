@@ -1,5 +1,6 @@
 ﻿namespace MagazineLayoutDesigner
 {
+    using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Drawing;
@@ -46,15 +47,22 @@
 
         public void LoadTextFromDoc(string fileName)
         {
-            using (WordprocessingDocument wordDocument = WordprocessingDocument.Open(fileName, false))
+            try
             {
-                if (wordDocument.MainDocumentPart?.Document.Body != null)
+                using (WordprocessingDocument wordDocument = WordprocessingDocument.Open(fileName, false))
                 {
-                    _textContent = wordDocument.MainDocumentPart.Document.Body.InnerText.Split();
+                    if (wordDocument.MainDocumentPart?.Document.Body != null)
+                    {
+                        _textContent = wordDocument.MainDocumentPart.Document.Body.InnerText.Split();
+                    }
                 }
-            }
 
-            RenderPage();
+                RenderPage();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка");
+            }
         }
 
         public void LoadImage(PictureBox selectedImage)
@@ -123,14 +131,16 @@
                 {
                     AutoSize = true,
                     Text = word,
-                    Font = new Font(PageParameters.DEFAULT_FONT_FAMILY, (float)_fontSize)
+                    Font = new Font(PageParameters.DEFAULT_FONT_FAMILY, (float)_fontSize),
+                    BackColor = Color.Aqua
                 };
 
                 while (true)
                 {
                     if (_lineFreeSpaceWidth < label.PreferredWidth)
                     {
-                        y += (int)_lineSpacing;
+                        //y += (int)_lineSpacing;
+                        y += Convert.ToInt32(Math.Round(label.PreferredHeight * _lineFactor, 0));
                         _lineFreeSpaceWidth = Width - 2 * Margin.All;
                         x = Margin.All;
                         continue;
@@ -141,7 +151,8 @@
                         if (y + label.PreferredHeight > _image.Location.Y && y + label.PreferredHeight < _image.Location.Y + _image.Height
                             || y > _image.Location.Y && y < _image.Location.Y + _image.Height)
                         {
-                            if (x + label.PreferredWidth > _image.Location.X && x + label.PreferredWidth < _image.Location.X + _image.Width)
+                            if (x + label.PreferredWidth > _image.Location.X && x + label.PreferredWidth < _image.Location.X + _image.Width
+                                || x <= _image.Location.X && x + label.PreferredWidth >= _image.Location.X + _image.Width)
                             {
                                 x = _image.Location.X + _image.Width;
                                 _lineFreeSpaceWidth = Width - _image.Location.X - _image.Width - Margin.All;
