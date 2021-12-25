@@ -146,7 +146,7 @@
             {
                 for (_fontSize = PageParameters.MAX_FONT_SIZE;
                      _fontSize >= PageParameters.MIN_FONT_SIZE;
-                     _fontSize -= PageParameters.FONT_POINT_IN_MM)
+                     _fontSize -= PageParameters.FONT_POINT)
                 {
                     if (!TryFillPageWithText(out List<Label> labels))
                     {
