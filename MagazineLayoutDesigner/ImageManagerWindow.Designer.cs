@@ -30,11 +30,13 @@ namespace MagazineLayoutDesigner
         private void InitializeComponent()
         {
             this.widthLabel = new System.Windows.Forms.Label();
-            this.widthTextBox = new System.Windows.Forms.TextBox();
             this.heightLabel = new System.Windows.Forms.Label();
-            this.heightTextBox = new System.Windows.Forms.TextBox();
             this.okButton = new System.Windows.Forms.Button();
             this.CancelButton = new System.Windows.Forms.Button();
+            this.widthNumericUpDown = new System.Windows.Forms.NumericUpDown();
+            this.heightNumericUpDown = new System.Windows.Forms.NumericUpDown();
+            ((System.ComponentModel.ISupportInitialize)(this.widthNumericUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.heightNumericUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // widthLabel
@@ -46,15 +48,6 @@ namespace MagazineLayoutDesigner
             this.widthLabel.TabIndex = 0;
             this.widthLabel.Text = "Ширина, мм:";
             // 
-            // widthTextBox
-            // 
-            this.widthTextBox.Location = new System.Drawing.Point(418, 26);
-            this.widthTextBox.Name = "widthTextBox";
-            this.widthTextBox.Size = new System.Drawing.Size(100, 20);
-            this.widthTextBox.TabIndex = 1;
-            this.widthTextBox.TextChanged += new System.EventHandler(this.widthTextBox_TextChanged);
-            this.widthTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.widthTextBox_KeyPress);
-            // 
             // heightLabel
             // 
             this.heightLabel.AutoSize = true;
@@ -63,15 +56,6 @@ namespace MagazineLayoutDesigner
             this.heightLabel.Size = new System.Drawing.Size(70, 13);
             this.heightLabel.TabIndex = 2;
             this.heightLabel.Text = "Высота, мм:";
-            // 
-            // heightTextBox
-            // 
-            this.heightTextBox.Location = new System.Drawing.Point(418, 65);
-            this.heightTextBox.Name = "heightTextBox";
-            this.heightTextBox.Size = new System.Drawing.Size(100, 20);
-            this.heightTextBox.TabIndex = 3;
-            this.heightTextBox.TextChanged += new System.EventHandler(this.heightTextBox_TextChanged);
-            this.heightTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.heightTextBox_KeyPress);
             // 
             // okButton
             // 
@@ -93,21 +77,69 @@ namespace MagazineLayoutDesigner
             this.CancelButton.UseVisualStyleBackColor = true;
             this.CancelButton.Click += new System.EventHandler(this.CancelButton_Click);
             // 
+            // widthNumericUpDown
+            // 
+            this.widthNumericUpDown.Location = new System.Drawing.Point(418, 26);
+            this.widthNumericUpDown.Maximum = new decimal(new int[] {
+            190,
+            0,
+            0,
+            0});
+            this.widthNumericUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.widthNumericUpDown.Name = "widthNumericUpDown";
+            this.widthNumericUpDown.Size = new System.Drawing.Size(120, 20);
+            this.widthNumericUpDown.TabIndex = 6;
+            this.widthNumericUpDown.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.widthNumericUpDown.ValueChanged += new System.EventHandler(this.widthNumericUpDown_ValueChanged);
+            // 
+            // heightNumericUpDown
+            // 
+            this.heightNumericUpDown.Location = new System.Drawing.Point(418, 65);
+            this.heightNumericUpDown.Maximum = new decimal(new int[] {
+            277,
+            0,
+            0,
+            0});
+            this.heightNumericUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.heightNumericUpDown.Name = "heightNumericUpDown";
+            this.heightNumericUpDown.Size = new System.Drawing.Size(120, 20);
+            this.heightNumericUpDown.TabIndex = 7;
+            this.heightNumericUpDown.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.heightNumericUpDown.ValueChanged += new System.EventHandler(this.heightNumericUpDown_ValueChanged);
+            // 
             // ImageManagerWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(534, 450);
+            this.ClientSize = new System.Drawing.Size(551, 450);
+            this.Controls.Add(this.heightNumericUpDown);
+            this.Controls.Add(this.widthNumericUpDown);
             this.Controls.Add(this.CancelButton);
             this.Controls.Add(this.okButton);
-            this.Controls.Add(this.heightTextBox);
             this.Controls.Add(this.heightLabel);
-            this.Controls.Add(this.widthTextBox);
             this.Controls.Add(this.widthLabel);
             this.MaximizeBox = false;
             this.Name = "ImageManagerWindow";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "ImageManagerWindow";
+            ((System.ComponentModel.ISupportInitialize)(this.widthNumericUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.heightNumericUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -116,10 +148,10 @@ namespace MagazineLayoutDesigner
         #endregion
 
         private System.Windows.Forms.Label widthLabel;
-        private System.Windows.Forms.TextBox widthTextBox;
         private System.Windows.Forms.Label heightLabel;
-        private System.Windows.Forms.TextBox heightTextBox;
         private System.Windows.Forms.Button okButton;
         private System.Windows.Forms.Button CancelButton;
+        private System.Windows.Forms.NumericUpDown widthNumericUpDown;
+        private System.Windows.Forms.NumericUpDown heightNumericUpDown;
     }
 }

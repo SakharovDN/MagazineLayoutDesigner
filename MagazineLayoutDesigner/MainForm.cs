@@ -25,7 +25,6 @@
         #endregion
 
         #region Methods
-        
 
         private void loadTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -37,9 +36,12 @@
             switch (Path.GetExtension(openTextFileDialog.FileName))
             {
                 case ".txt":
+                    _pagePanel.LoadTextFromTxt(openTextFileDialog.FileName);
+                    break;
+
                 case ".doc":
                 case ".docx":
-                    _pagePanel.LoadText(openTextFileDialog.FileName);
+                    _pagePanel.LoadTextFromDoc(openTextFileDialog.FileName);
                     break;
 
                 default:
@@ -55,7 +57,6 @@
                 return;
             }
 
-            
             switch (Path.GetExtension(openImageFileDialog.FileName))
             {
                 case ".png":
@@ -67,6 +68,7 @@
                     {
                         return;
                     }
+
                     _pagePanel.LoadImage(imageManagerWindow.SelectedImage);
                     break;
 
@@ -75,8 +77,6 @@
                     break;
             }
         }
-
-
 
         #endregion
     }
