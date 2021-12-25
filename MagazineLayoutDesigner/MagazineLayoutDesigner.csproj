@@ -60,6 +60,9 @@
     <Compile Include="ImageManagerWindow.Designer.cs">
       <DependentUpon>ImageManagerWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="ImagePictureBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

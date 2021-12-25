@@ -8,15 +8,29 @@
     {
         #region Fields
 
-        private int _selectedImageWidth;
-        private int _selectedImageHeight;
-        private readonly Image _image;
+        /// <summary>
+        /// Широта выбранного изображения
+        /// </summary>
+        private int _imageWidth;
+
+        /// <summary>
+        /// Высота выбранного изображения
+        /// </summary>
+        private int _imageHeight;
 
         #endregion
 
         #region Properties
 
-        public PictureBox SelectedImage { get; set; }
+        /// <summary>
+        /// Объект Image, в котором хранится выбранное изображение
+        /// </summary>
+        public Image Image { get; set; }
+
+        /// <summary>
+        /// Объект Size, в котором хранятся задаваемые параметра размера выбранного изображения
+        /// </summary>
+        public Size ImageSize { get; set; }
 
         #endregion
 
@@ -25,13 +39,13 @@
         public ImageManagerWindow(string fileName)
         {
             InitializeComponent();
-            _image = Image.FromFile(fileName);
+            Image = Image.FromFile(fileName);
             var selectedImagePreview = new PictureBox
             {
-                Image = _image,
+                Image = Image,
                 BackColor = Color.White,
                 Location = new Point(10, 10),
-                Size = new Size(_image.Width, _image.Height),
+                Size = new Size(Image.Width, Image.Height),
                 MaximumSize = new Size(400, 400),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 BorderStyle = BorderStyle.FixedSingle
@@ -43,36 +57,51 @@
 
         #region Methods
 
+        /// <summary>
+        /// Обработчик нажатия кнопки OК
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         private void okButton_Click(object sender, EventArgs e)
         {
-            SelectedImage = new PictureBox
-            {
-                Image = _image,
-                Size = new Size(_selectedImageWidth * PageParameters.SCALE, _selectedImageHeight * PageParameters.SCALE),
-                SizeMode = PictureBoxSizeMode.Zoom
-            };
+            ImageSize = new Size(_imageWidth * PageParameters.SCALE, _imageHeight * PageParameters.SCALE);
             DialogResult = DialogResult.OK;
             Close();
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки Отмена
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         private void CancelButton_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
             Close();
         }
 
+        /// <summary>
+        /// Обработчик изменения значения задаваемой широты изображения
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         private void widthNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            _selectedImageWidth = Convert.ToInt32(widthNumericUpDown.Value);
-            _selectedImageHeight = _selectedImageWidth * _image.Height / _image.Width;
-            heightNumericUpDown.Text = _selectedImageHeight.ToString();
+            _imageWidth = Convert.ToInt32(widthNumericUpDown.Value);
+            _imageHeight = _imageWidth * Image.Height / Image.Width;
+            heightNumericUpDown.Text = _imageHeight.ToString();
         }
 
+        /// <summary>
+        /// Обработчик изменения значения задаваемой высоты изображения
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         private void heightNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
-            _selectedImageHeight = Convert.ToInt32(heightNumericUpDown.Value);
-            _selectedImageWidth = _selectedImageHeight * _image.Width / _image.Height;
-            widthNumericUpDown.Text = _selectedImageWidth.ToString();
+            _imageHeight = Convert.ToInt32(heightNumericUpDown.Value);
+            _imageWidth = _imageHeight * Image.Width / Image.Height;
+            widthNumericUpDown.Text = _imageWidth.ToString();
         }
 
         #endregion

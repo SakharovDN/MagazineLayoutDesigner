@@ -13,13 +13,30 @@
     {
         #region Fields
 
+        /// <summary>
+        /// Массив всех слов
+        /// </summary>
         private string[] _textContent;
-        private PictureBox _image;
+
+        /// <summary>
+        /// PictureBox с выбранным изображением
+        /// </summary>
+        private ImagePictureBox _image;
+
+        /// <summary>
+        /// Размер шрифта
+        /// </summary>
         private double _fontSize;
-        private double _lineSpacing;
+
+        /// <summary>
+        /// Межстрочный множитель
+        /// </summary>
         private double _lineFactor;
+
+        /// <summary>
+        /// Ширина свободного места в строке
+        /// </summary>
         private int _lineFreeSpaceWidth;
-        private Point _mouseDownLocation;
 
         #endregion
 
@@ -39,12 +56,20 @@
 
         #region Methods
 
+        /// <summary>
+        /// Метод загружающий текст из txt файла
+        /// </summary>
+        /// <param name = "fileName"></param>
         public void LoadTextFromTxt(string fileName)
         {
             _textContent = File.ReadAllText(fileName).Split();
             RenderPage();
         }
 
+        /// <summary>
+        /// Метод загружающий текст из word файла
+        /// </summary>
+        /// <param name = "fileName"></param>
         public void LoadTextFromDoc(string fileName)
         {
             try
@@ -65,16 +90,32 @@
             }
         }
 
-        public void LoadImage(PictureBox selectedImage)
+        /// <summary>
+        /// Метод добавляющий изображение
+        /// </summary>
+        /// <param name = "image"></param>
+        /// <param name = "size"></param>
+        public void LoadImage(Image image, Size size)
         {
-            _image = selectedImage;
+            _image = new ImagePictureBox(image, size, this);
             _image.Location = new Point(Margin.All, Margin.All);
-            _image.MouseDown += ImageMouseDown;
-            _image.MouseMove += ImageMouseMove;
-            _image.MouseUp += ImageMouseUp;
+            _image.ImageLocationChanged += InvokeRenderPage;
             RenderPage();
         }
 
+        /// <summary>
+        /// Обработчик, который вызывается, когда изображение меняет координаты
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
+        private void InvokeRenderPage(object sender, EventArgs e)
+        {
+            RenderPage();
+        }
+
+        /// <summary>
+        /// метод отображающий контент страницы на панели
+        /// </summary>
         private void RenderPage()
         {
             Controls.Clear();
@@ -93,6 +134,10 @@
             }
         }
 
+        /// <summary>
+        /// Метод подбирающий размер шрифта и межстрочный интервал
+        /// </summary>
+        /// <returns>true если получилось подобрать размер шрифта и межстрочный интервал, иначе false</returns>
         private bool TrySelectLayoutParameters()
         {
             for (_lineFactor = PageParameters.MAX_LINE_FACTOR;
@@ -103,8 +148,6 @@
                      _fontSize >= PageParameters.MIN_FONT_SIZE;
                      _fontSize -= PageParameters.FONT_POINT_IN_MM)
                 {
-                    _lineSpacing = GetLineSpacing();
-
                     if (!TryFillPageWithText(out List<Label> labels))
                     {
                         continue;
@@ -118,15 +161,26 @@
             return false;
         }
 
+        /// <summary>
+        /// Метод заполняющий страницу текстом
+        /// </summary>
+        /// <param name = "labels">Список Label'ов, который добавляется на модель</param>
+        /// <returns>true если получилось заполнить страницу, иначе false</returns>
         private bool TryFillPageWithText(out List<Label> labels)
         {
+            // очередь из слов
             var words = new ConcurrentQueue<string>(_textContent);
+            // список Label'ов
             labels = new List<Label>();
+            // задаем начальные координаты 
             int x = Margin.All, y = Margin.All;
+            // задаем ширину свободного места в строке
             _lineFreeSpaceWidth = Width - 2 * Margin.All;
 
+            // цикл, пока очередь слов не опустеет, команда TryDequeue достает из очереди слово и удаляет из очереди
             while (words.TryDequeue(out string word))
             {
+                // инициализируем label
                 var label = new Label
                 {
                     AutoSize = true,
@@ -134,8 +188,10 @@
                     Font = new Font(PageParameters.DEFAULT_FONT_FAMILY, (float)_fontSize)
                 };
 
+                // бесконечный цикл, но по сути это цикл "пока в строке есть место"
                 while (true)
                 {
+                    // если ширина свободного места меньше ширины label'a, то переносим координаты на новую строку, и начинаем цикл заново
                     if (_lineFreeSpaceWidth < label.PreferredWidth)
                     {
                         y += Convert.ToInt32(Math.Round(PageParameters.LINE_SPACING * _lineFactor, 0));
@@ -144,6 +200,7 @@
                         continue;
                     }
 
+                    // если есть изображение, и label как-то не пересекается с ним, то переносим координату x правее изображения, уменьшаем ширину свободного месте и начинаем цикл заново
                     if (_image != null)
                     {
                         if (y + label.PreferredHeight > _image.Location.Y && y + label.PreferredHeight < _image.Location.Y + _image.Height
@@ -159,6 +216,7 @@
                         }
                     }
 
+                    // если кончилось место в странице, и слова в очереди остались, то выходим из метода с false (заполнить страницу не получилось)
                     if (y > Height - Margin.All - label.PreferredHeight)
                     {
                         if (words.Count > 0)
@@ -167,91 +225,19 @@
                         }
                     }
 
+                    // останавливаем цикл если слово получилось вставить
                     break;
                 }
 
+                // устанавливаем подобранные координаты для label'a, добавляем его в список, увеличивем координату x и уменьшаем ширину свободного пространства для следующего слова
                 label.Location = new Point(x, y);
                 labels.Add(label);
                 x += label.PreferredWidth;
                 _lineFreeSpaceWidth -= label.PreferredWidth;
             }
 
+            // цикл остановился, выходим из метода с true (заполнить страницу получилось)
             return true;
-        }
-
-        private double GetLineSpacing()
-        {
-            var label = new Label
-            {
-                AutoSize = true,
-                Text = @" ",
-                Font = new Font(PageParameters.DEFAULT_FONT_FAMILY, (float)_fontSize)
-            };
-            return label.PreferredWidth * _lineFactor;
-        }
-
-        private void ImageMouseUp(object sender, MouseEventArgs e)
-        {
-            if (_image.Left < Margin.All)
-            {
-                _image.Left = Margin.All;
-            }
-
-            if (_image.Location.X + _image.Width > Width - Margin.All)
-            {
-                _image.Location = new Point(Width - Margin.All - _image.Width, _image.Location.Y);
-            }
-
-            if (_image.Top < Margin.All)
-            {
-                _image.Top = Margin.All;
-            }
-
-            if (_image.Location.Y + _image.Height > Height - Margin.All)
-            {
-                _image.Location = new Point(_image.Location.X, Height - Margin.All - _image.Height);
-            }
-
-            RenderPage();
-        }
-
-        private void ImageMouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.Button != MouseButtons.Left)
-            {
-                return;
-            }
-
-            if (_image.Left >= Margin.All && _image.Location.X + _image.Width <= Width - Margin.All && _image.Top >= Margin.All
-                && _image.Location.Y + _image.Height <= Height - Margin.All)
-            {
-                _image.Left = e.X + _image.Left - _mouseDownLocation.X;
-                _image.Top = e.Y + _image.Top - _mouseDownLocation.Y;
-            }
-            else if (_image.Left < Margin.All)
-            {
-                _image.Left = Margin.All;
-            }
-            else if (_image.Location.X + _image.Width > Width - Margin.All)
-            {
-                _image.Location = new Point(Width - Margin.All - _image.Width, _image.Location.Y);
-            }
-            else if (_image.Top < Margin.All)
-            {
-                _image.Top = Margin.All;
-            }
-            else if (_image.Location.Y + _image.Height > Height - Margin.All)
-            {
-                _image.Location = new Point(_image.Location.X, Height - Margin.All - _image.Height);
-            }
-        }
-
-        private void ImageMouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                _mouseDownLocation = e.Location;
-            }
         }
 
         #endregion

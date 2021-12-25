@@ -9,6 +9,9 @@
     {
         #region Fields
 
+        /// <summary>
+        /// Панель, на которой отображается модель
+        /// </summary>
         private readonly PagePanel _pagePanel;
 
         #endregion
@@ -28,6 +31,11 @@
 
         #region Methods
 
+        /// <summary>
+        /// Обработчик нажатия кнопки Загрузить текст
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         private void loadTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (openTextFileDialog.ShowDialog() != DialogResult.OK)
@@ -52,6 +60,11 @@
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки Добавить изображение
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         private void addPictureToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (openImageFileDialog.ShowDialog() != DialogResult.OK)
@@ -71,7 +84,7 @@
                         return;
                     }
 
-                    _pagePanel.LoadImage(imageManagerWindow.SelectedImage);
+                    _pagePanel.LoadImage(imageManagerWindow.Image, imageManagerWindow.ImageSize);
                     break;
 
                 default:
@@ -80,6 +93,11 @@
             }
         }
 
+        /// <summary>
+        /// Обработчик нажатия кнопки Сохранить страницу
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         private void savePageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (saveFileDialog.ShowDialog() != DialogResult.OK)
