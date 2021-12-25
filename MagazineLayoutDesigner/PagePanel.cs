@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Windows.Forms;
 
     using DocumentFormat.OpenXml.Packaging;
@@ -17,11 +18,6 @@
         /// Массив всех слов
         /// </summary>
         private string[] _textContent;
-
-        /// <summary>
-        /// PictureBox с выбранным изображением
-        /// </summary>
-        private ImagePictureBox _image;
 
         /// <summary>
         /// Размер шрифта
@@ -40,6 +36,15 @@
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// PictureBox с выбранным изображением
+        /// </summary>
+        public List<ImagePictureBox> Images { get; set; }
+
+        #endregion
+
         #region Constructors
 
         public PagePanel(Point location)
@@ -50,6 +55,7 @@
             Height = PageParameters.HEIGHT;
             Margin = new Padding(PageParameters.MARGIN);
             BackColor = Color.White;
+            Images = new List<ImagePictureBox>();
         }
 
         #endregion
@@ -93,14 +99,53 @@
         /// <summary>
         /// Метод добавляющий изображение
         /// </summary>
-        /// <param name = "image"></param>
+        /// <param name = "selectedImage"></param>
         /// <param name = "size"></param>
-        public void LoadImage(Image image, Size size)
+        public void LoadImage(Image selectedImage, Size size)
         {
-            _image = new ImagePictureBox(image, size, this);
-            _image.Location = new Point(Margin.All, Margin.All);
-            _image.ImageLocationChanged += InvokeRenderPage;
+            var image = new ImagePictureBox(selectedImage, size, this);
+            image.Location = new Point(Margin.All, Margin.All);
+            image.ImageLocationChanged += InvokeRenderPage;
+            Images.Add(image);
             RenderPage();
+        }
+
+        public void RemoveImage(object sender, MouseEventArgs e)
+        {
+            if (!(sender is ImagePictureBox image))
+            {
+                return;
+            }
+
+            Controls.Remove(image);
+            Images.Remove(image);
+            RenderPage();
+        }
+
+        public void TurnOnRemoveMode(object sender, EventArgs e)
+        {
+            Cursor = Cursors.Cross;
+
+            foreach (ImagePictureBox image in Images)
+            {
+                image.MouseClick += RemoveImage;
+                image.MouseUp -= image.HandleMouseUp;
+                image.MouseMove -= image.HandleMouseMove;
+                image.MouseDown -= image.HandleMouseDown;
+            }
+        }
+
+        public void TurnOffRemoveMode(object sender, EventArgs e)
+        {
+            Cursor = Cursors.Default;
+
+            foreach (ImagePictureBox image in Images)
+            {
+                image.MouseClick -= RemoveImage;
+                image.MouseUp += image.HandleMouseUp;
+                image.MouseMove += image.HandleMouseMove;
+                image.MouseDown += image.HandleMouseDown;
+            }
         }
 
         /// <summary>
@@ -120,9 +165,9 @@
         {
             Controls.Clear();
 
-            if (_image != null)
+            foreach (ImagePictureBox image in Images)
             {
-                Controls.Add(_image);
+                Controls.Add(image);
             }
 
             if (_textContent != null && _textContent.Length > 0)
@@ -144,9 +189,7 @@
                  _lineFactor >= PageParameters.MIN_LINE_FACTOR;
                  _lineFactor -= PageParameters.LINE_FACTOR_STEP)
             {
-                for (_fontSize = PageParameters.MAX_FONT_SIZE;
-                     _fontSize >= PageParameters.MIN_FONT_SIZE;
-                     _fontSize -= PageParameters.FONT_POINT)
+                for (_fontSize = PageParameters.MAX_FONT_SIZE; _fontSize >= PageParameters.MIN_FONT_SIZE; _fontSize -= PageParameters.FONT_POINT)
                 {
                     if (!TryFillPageWithText(out List<Label> labels))
                     {
@@ -191,28 +234,34 @@
                 // бесконечный цикл, но по сути это цикл "пока в строке есть место"
                 while (true)
                 {
+                    Begin:
+
                     // если ширина свободного места меньше ширины label'a, то переносим координаты на новую строку, и начинаем цикл заново
                     if (_lineFreeSpaceWidth < label.PreferredWidth)
                     {
                         y += Convert.ToInt32(Math.Round(PageParameters.LINE_SPACING * _lineFactor, 0));
                         _lineFreeSpaceWidth = Width - 2 * Margin.All;
                         x = Margin.All;
-                        continue;
+                        goto Begin;
                     }
 
-                    // если есть изображение, и label как-то не пересекается с ним, то переносим координату x правее изображения, уменьшаем ширину свободного месте и начинаем цикл заново
-                    if (_image != null)
+                    // если есть изображения, и label как-то не пересекается с одним из них, то переносим координату x правее изображения, уменьшаем ширину свободного месте и начинаем цикл заново
+                    if (Images != null)
                     {
-                        if (y + label.PreferredHeight > _image.Location.Y && y + label.PreferredHeight < _image.Location.Y + _image.Height
-                            || y > _image.Location.Y && y < _image.Location.Y + _image.Height)
+                        foreach (ImagePictureBox image in Images
+                                                         .Where(
+                                                              image => y + label.PreferredHeight > image.Location.Y
+                                                                       && y + label.PreferredHeight < image.Location.Y + image.Height
+                                                                       || y > image.Location.Y && y < image.Location.Y + image.Height).Where(
+                                                              image =>
+                                                                  x + label.PreferredWidth > image.Location.X
+                                                                  && x + label.PreferredWidth < image.Location.X + image.Width
+                                                                  || x <= image.Location.X
+                                                                  && x + label.PreferredWidth >= image.Location.X + image.Width))
                         {
-                            if (x + label.PreferredWidth > _image.Location.X && x + label.PreferredWidth < _image.Location.X + _image.Width
-                                || x <= _image.Location.X && x + label.PreferredWidth >= _image.Location.X + _image.Width)
-                            {
-                                x = _image.Location.X + _image.Width;
-                                _lineFreeSpaceWidth = Width - _image.Location.X - _image.Width - Margin.All;
-                                continue;
-                            }
+                            x = image.Location.X + image.Width;
+                            _lineFreeSpaceWidth = Width - image.Location.X - image.Width - Margin.All;
+                            goto Begin;
                         }
                     }
 

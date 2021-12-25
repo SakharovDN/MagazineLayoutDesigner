@@ -14,6 +14,16 @@
         /// </summary>
         private readonly PagePanel _pagePanel;
 
+        private bool _removeModeIsOn;
+
+        #endregion
+
+        #region Events
+
+        private event EventHandler RemoveModeTurnedOn;
+
+        private event EventHandler RemoveModeTurnedOff;
+
         #endregion
 
         #region Constructors
@@ -22,9 +32,12 @@
         {
             InitializeComponent();
             _pagePanel = new PagePanel(new Point(10, menuStrip.Height + 10));
+            RemoveModeTurnedOn += _pagePanel.TurnOnRemoveMode;
+            RemoveModeTurnedOff += _pagePanel.TurnOffRemoveMode;
             Controls.Add(_pagePanel);
             Width = _pagePanel.Width + 40;
             Height = menuStrip.Height + _pagePanel.Height + 60;
+            _removeModeIsOn = false;
         }
 
         #endregion
@@ -65,8 +78,14 @@
         /// </summary>
         /// <param name = "sender"></param>
         /// <param name = "e"></param>
-        private void addPictureToolStripMenuItem_Click(object sender, EventArgs e)
+        private void addImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (_removeModeIsOn)
+            {
+                RemoveModeTurnedOff?.Invoke(null, EventArgs.Empty);
+                _removeModeIsOn = !_removeModeIsOn;
+            }
+
             if (openImageFileDialog.ShowDialog() != DialogResult.OK)
             {
                 return;
@@ -108,6 +127,20 @@
             var bitmap = new Bitmap(_pagePanel.Width, _pagePanel.Height);
             _pagePanel.DrawToBitmap(bitmap, new Rectangle(0, 0, _pagePanel.Width, _pagePanel.Height));
             bitmap.Save(saveFileDialog.FileName);
+        }
+
+        private void removeImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_removeModeIsOn)
+            {
+                RemoveModeTurnedOff?.Invoke(null, EventArgs.Empty);
+                _removeModeIsOn = !_removeModeIsOn;
+            }
+            else
+            {
+                RemoveModeTurnedOn?.Invoke(null, EventArgs.Empty);
+                _removeModeIsOn = !_removeModeIsOn;
+            }
         }
 
         #endregion
