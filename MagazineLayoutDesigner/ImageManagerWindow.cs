@@ -43,53 +43,12 @@
 
         #region Methods
 
-        private void widthTextBox_TextChanged(object sender, EventArgs e)
-        {
-            _selectedImageWidth = string.IsNullOrEmpty(widthTextBox.Text) ? 0 : int.Parse(widthTextBox.Text);
-        }
-
-        private void heightTextBox_TextChanged(object sender, EventArgs e)
-        {
-            _selectedImageHeight = string.IsNullOrEmpty(widthTextBox.Text) ? 0 : int.Parse(heightTextBox.Text);
-        }
-
-        private void widthTextBox_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (char.IsDigit(e.KeyChar) || e.KeyChar == 8)
-            {
-                return;
-            }
-
-            e.Handled = true;
-        }
-
-        private void heightTextBox_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (!char.IsDigit(e.KeyChar) && e.KeyChar != 8)
-            {
-                e.Handled = true;
-            }
-        }
-
         private void okButton_Click(object sender, EventArgs e)
         {
-            if (_selectedImageHeight == 0 || _selectedImageWidth == 0)
-            {
-                MessageBox.Show("Размеры изображение должны быть больше 0", "Ошибка");
-                return;
-            }
-
-            if (_selectedImageHeight > 297 || _selectedImageWidth > 210)
-            {
-                MessageBox.Show("Размеры изображения не могут превышать размеров страницы", "Ошибка");
-                return;
-            }
-
             SelectedImage = new PictureBox
             {
                 Image = _image,
-                Size = new Size(_selectedImageWidth * 4, _selectedImageHeight * 4),
-                BorderStyle = BorderStyle.FixedSingle,
+                Size = new Size(_selectedImageWidth * PageParameters.SCALE, _selectedImageHeight * PageParameters.SCALE),
                 SizeMode = PictureBoxSizeMode.Zoom
             };
             DialogResult = DialogResult.OK;
@@ -100,6 +59,20 @@
         {
             DialogResult = DialogResult.Cancel;
             Close();
+        }
+
+        private void widthNumericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            _selectedImageWidth = Convert.ToInt32(widthNumericUpDown.Value);
+            _selectedImageHeight = _selectedImageWidth * _image.Height / _image.Width;
+            heightNumericUpDown.Text = _selectedImageHeight.ToString();
+        }
+
+        private void heightNumericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            _selectedImageHeight = Convert.ToInt32(heightNumericUpDown.Value);
+            _selectedImageWidth = _selectedImageHeight * _image.Width / _image.Height;
+            widthNumericUpDown.Text = _selectedImageWidth.ToString();
         }
 
         #endregion

@@ -6,22 +6,10 @@
     using System.IO;
     using System.Windows.Forms;
 
+    using DocumentFormat.OpenXml.Packaging;
+
     public sealed class PagePanel : Panel
     {
-        #region Constants
-
-        private const int WIDTH = 210 * 4;
-        private const int HEIGHT = 297 * 4;
-        private const int MARGIN = 10 * 4;
-        private const string DEFAULT_FONT_FAMILY = "Times New Roman";
-        private const double FONT_POINT_IN_MM = 0.352777777777777777777;
-        private const double MIN_FONT_SIZE = 9.0 * FONT_POINT_IN_MM * 3;
-        private const double MAX_FONT_SIZE = 12.0 * FONT_POINT_IN_MM * 3;
-        private const double MIN_LINE_FACTOR = 1;
-        private const double MAX_LINE_FACTOR = 1.15;
-
-        #endregion
-
         #region Fields
 
         private string[] _textContent;
@@ -40,41 +28,39 @@
         {
             BorderStyle = BorderStyle.FixedSingle;
             Location = location;
-            Width = WIDTH;
-            Height = HEIGHT;
+            Width = PageParameters.WIDTH;
+            Height = PageParameters.HEIGHT;
+            Margin = new Padding(PageParameters.MARGIN);
             BackColor = Color.White;
-            //using (Graphics g = Graphics.FromImage(BackgroundImage = new Bitmap(WIDTH, HEIGHT)))
-            //{
-            //    var p = new Pen(Color.Black, 3);
-            //    var point1 = new Point(MARGIN, MARGIN);
-            //    var point2 = new Point(MARGIN, HEIGHT - MARGIN);
-            //    g.DrawLine(p, point1, point2);
-            //    point1 = new Point(MARGIN, MARGIN);
-            //    point2 = new Point(WIDTH - MARGIN, MARGIN);
-            //    g.DrawLine(p, point1, point2);
-            //    point1 = new Point(WIDTH - MARGIN, HEIGHT - MARGIN);
-            //    point2 = new Point(MARGIN, HEIGHT - MARGIN);
-            //    g.DrawLine(p, point1, point2);
-            //    point1 = new Point(WIDTH - MARGIN, MARGIN);
-            //    point2 = new Point(WIDTH - MARGIN, HEIGHT - MARGIN);
-            //    g.DrawLine(p, point1, point2);
-            //}
         }
 
         #endregion
 
         #region Methods
 
-        public void LoadText(string fileName)
+        public void LoadTextFromTxt(string fileName)
         {
             _textContent = File.ReadAllText(fileName).Split();
+            RenderPage();
+        }
+
+        public void LoadTextFromDoc(string fileName)
+        {
+            using (WordprocessingDocument wordDocument = WordprocessingDocument.Open(fileName, false))
+            {
+                if (wordDocument.MainDocumentPart?.Document.Body != null)
+                {
+                    _textContent = wordDocument.MainDocumentPart.Document.Body.InnerText.Split();
+                }
+            }
+
             RenderPage();
         }
 
         public void LoadImage(PictureBox selectedImage)
         {
             _image = selectedImage;
-            _image.Location = new Point(MARGIN, MARGIN);
+            _image.Location = new Point(Margin.All, Margin.All);
             _image.MouseDown += ImageMouseDown;
             _image.MouseMove += ImageMouseMove;
             _image.MouseUp += ImageMouseUp;
@@ -92,15 +78,22 @@
 
             if (_textContent != null && _textContent.Length > 0)
             {
-                MessageBox.Show(TrySelectLayoutParameters() ? $"Размер шрифта: {_fontSize}\nМежстрочный множитель: {_lineFactor}" : "Текст не влезает");
+                if (!TrySelectLayoutParameters())
+                {
+                    MessageBox.Show("Текст слишком большой. Разбейте на части.");
+                }
             }
         }
 
         private bool TrySelectLayoutParameters()
         {
-            for (_lineFactor = MAX_LINE_FACTOR; _lineFactor >= MIN_LINE_FACTOR; _lineFactor -= 0.01)
+            for (_lineFactor = PageParameters.MAX_LINE_FACTOR;
+                 _lineFactor >= PageParameters.MIN_LINE_FACTOR;
+                 _lineFactor -= PageParameters.LINE_FACTOR_STEP)
             {
-                for (_fontSize = MAX_FONT_SIZE; _fontSize >= MIN_FONT_SIZE; _fontSize -= FONT_POINT_IN_MM * 3)
+                for (_fontSize = PageParameters.MAX_FONT_SIZE;
+                     _fontSize >= PageParameters.MIN_FONT_SIZE;
+                     _fontSize -= PageParameters.FONT_POINT_IN_MM * 3)
                 {
                     _lineSpacing = GetLineSpacing();
 
@@ -121,8 +114,8 @@
         {
             var words = new ConcurrentQueue<string>(_textContent);
             labels = new List<Label>();
-            int x = MARGIN, y = MARGIN;
-            _lineFreeSpaceWidth = Width - 2 * MARGIN;
+            int x = Margin.All, y = Margin.All;
+            _lineFreeSpaceWidth = Width - 2 * Margin.All;
 
             while (words.TryDequeue(out string word))
             {
@@ -130,7 +123,7 @@
                 {
                     AutoSize = true,
                     Text = word,
-                    Font = new Font(DEFAULT_FONT_FAMILY, (float)_fontSize)
+                    Font = new Font(PageParameters.DEFAULT_FONT_FAMILY, (float)_fontSize)
                 };
 
                 while (true)
@@ -138,8 +131,8 @@
                     if (_lineFreeSpaceWidth < label.PreferredWidth)
                     {
                         y += (int)_lineSpacing;
-                        _lineFreeSpaceWidth = Width - 2 * MARGIN;
-                        x = MARGIN;
+                        _lineFreeSpaceWidth = Width - 2 * Margin.All;
+                        x = Margin.All;
                         continue;
                     }
 
@@ -151,13 +144,13 @@
                             if (x + label.PreferredWidth > _image.Location.X && x + label.PreferredWidth < _image.Location.X + _image.Width)
                             {
                                 x = _image.Location.X + _image.Width;
-                                _lineFreeSpaceWidth = WIDTH - _image.Location.X - _image.Width - MARGIN;
+                                _lineFreeSpaceWidth = Width - _image.Location.X - _image.Width - Margin.All;
                                 continue;
                             }
                         }
                     }
 
-                    if (y > HEIGHT - MARGIN - label.PreferredHeight)
+                    if (y > Height - Margin.All - label.PreferredHeight)
                     {
                         if (words.Count > 0)
                         {
@@ -183,22 +176,64 @@
             {
                 AutoSize = true,
                 Text = @" ",
-                Font = new Font(DEFAULT_FONT_FAMILY, (float)_fontSize)
+                Font = new Font(PageParameters.DEFAULT_FONT_FAMILY, (float)_fontSize)
             };
             return label.PreferredWidth * _lineFactor;
         }
 
         private void ImageMouseUp(object sender, MouseEventArgs e)
         {
+            if (_image.Left < Margin.All)
+            {
+                _image.Left = Margin.All;
+            }
+
+            if (_image.Location.X + _image.Width > Width - Margin.All)
+            {
+                _image.Location = new Point(Width - Margin.All - _image.Width, _image.Location.Y);
+            }
+
+            if (_image.Top < Margin.All)
+            {
+                _image.Top = Margin.All;
+            }
+
+            if (_image.Location.Y + _image.Height > Height - Margin.All)
+            {
+                _image.Location = new Point(_image.Location.X, Height - Margin.All - _image.Height);
+            }
+
             RenderPage();
         }
 
         private void ImageMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
+            if (e.Button != MouseButtons.Left)
+            {
+                return;
+            }
+
+            if (_image.Left >= Margin.All && _image.Location.X + _image.Width <= Width - Margin.All && _image.Top >= Margin.All
+                && _image.Location.Y + _image.Height <= Height - Margin.All)
             {
                 _image.Left = e.X + _image.Left - _mouseDownLocation.X;
                 _image.Top = e.Y + _image.Top - _mouseDownLocation.Y;
+            }
+            else if (_image.Left < Margin.All)
+            {
+                _image.Left = Margin.All;
+            }
+            else if (_image.Location.X + _image.Width > Width - Margin.All)
+            {
+                _image.Location = new Point(Width - Margin.All - _image.Width, _image.Location.Y);
+            }
+            else if (_image.Top < Margin.All)
+            {
+                _image.Top = Margin.All;
+            }
+            else if (_image.Location.Y + _image.Height > Height - Margin.All)
+            {
+                _image.Location = new Point(_image.Location.X, Height - Margin.All - _image.Height);
             }
         }
 
