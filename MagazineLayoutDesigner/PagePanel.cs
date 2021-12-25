@@ -101,7 +101,7 @@
             {
                 for (_fontSize = PageParameters.MAX_FONT_SIZE;
                      _fontSize >= PageParameters.MIN_FONT_SIZE;
-                     _fontSize -= PageParameters.FONT_POINT_IN_MM * 3)
+                     _fontSize -= PageParameters.FONT_POINT_IN_MM)
                 {
                     _lineSpacing = GetLineSpacing();
 
@@ -131,16 +131,14 @@
                 {
                     AutoSize = true,
                     Text = word,
-                    Font = new Font(PageParameters.DEFAULT_FONT_FAMILY, (float)_fontSize),
-                    BackColor = Color.Aqua
+                    Font = new Font(PageParameters.DEFAULT_FONT_FAMILY, (float)_fontSize)
                 };
 
                 while (true)
                 {
                     if (_lineFreeSpaceWidth < label.PreferredWidth)
                     {
-                        //y += (int)_lineSpacing;
-                        y += Convert.ToInt32(Math.Round(label.PreferredHeight * _lineFactor, 0));
+                        y += Convert.ToInt32(Math.Round(PageParameters.LINE_SPACING * _lineFactor, 0));
                         _lineFreeSpaceWidth = Width - 2 * Margin.All;
                         x = Margin.All;
                         continue;

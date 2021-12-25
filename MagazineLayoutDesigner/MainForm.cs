@@ -2,7 +2,6 @@
 {
     using System;
     using System.Drawing;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Windows.Forms;
 
@@ -21,9 +20,8 @@
             InitializeComponent();
             _pagePanel = new PagePanel(new Point(10, menuStrip.Height + 10));
             Controls.Add(_pagePanel);
-            saveButton.Location = new Point(10, _pagePanel.Location.Y + _pagePanel.Height + 10);
             Width = _pagePanel.Width + 40;
-            Height = menuStrip.Height + _pagePanel.Height + saveButton.Height + 60;
+            Height = menuStrip.Height + _pagePanel.Height + 60;
         }
 
         #endregion
@@ -82,7 +80,7 @@
             }
         }
 
-        private void saveButton_Click(object sender, EventArgs e)
+        private void savePageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (saveFileDialog.ShowDialog() != DialogResult.OK)
             {
