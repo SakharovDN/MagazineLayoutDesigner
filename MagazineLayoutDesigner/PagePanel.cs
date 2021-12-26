@@ -323,8 +323,8 @@
             }
 
             int freeSpace = lineEnd - labelLine[0].Location.X;
-            int wordSpacing = labelLine.Aggregate(freeSpace, (current, label) => current - label.PreferredWidth) / labelLine.Count;
-            int remainderAmount = labelLine.Aggregate(freeSpace, (current, label) => current - label.PreferredWidth) % labelLine.Count;
+            int wordSpacing = labelLine.Aggregate(freeSpace, (current, label) => current - label.PreferredWidth) / (labelLine.Count - 1);
+            int remainderAmount = labelLine.Aggregate(freeSpace, (current, label) => current - label.PreferredWidth) % (labelLine.Count - 1);
             int x = labelLine[0].Location.X + labelLine[0].PreferredWidth;
             int[] spaces = new int[labelLine.Count - 1];
 
